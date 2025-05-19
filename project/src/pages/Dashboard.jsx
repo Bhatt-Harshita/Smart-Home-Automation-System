@@ -8,11 +8,23 @@ const Dashboard = () => {
     { id: 3, name: 'Kitchen Light', status: false, room: 'Kitchen', image: 'https://media.istockphoto.com/id/1371279809/photo/modern-pendant-lighting-home-decoration-kitchen-concept.webp?a=1&b=1&s=612x612&w=0&k=20&c=wjAdRxunpA9JQWGRlesfm2mQPKRWU_q0F_Uq22vz34k=' },
   ]);
 
-  const toggleDevice = (id) => {
-    setDevices(prev =>
-      prev.map(dev => dev.id === id ? { ...dev, status: !dev.status } : dev)
-    );
-  };
+  const toggleDevice = async (id, currentStatus) => {
+  const action = currentStatus ? 'off' : 'on';
+  try {
+    const response = await fetch(`/api/relay/${id}/${action}`);
+    if (response.ok) {
+      // Only update state if backend call was successful
+      setDevices(prev =>
+        prev.map(dev => dev.id === id ? { ...dev, status: !dev.status } : dev)
+      );
+    } else {
+      console.error("Failed to toggle device");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
 
   return (
     <div 
@@ -51,7 +63,8 @@ const Dashboard = () => {
             </div>
           </div>
           <button 
-            onClick={() => toggleDevice(device.id)}
+            onClick={() => toggleDevice(device.id, device.status)}
+
             style={{ 
               backgroundColor: '#00c896', 
               color: '#fff', 
