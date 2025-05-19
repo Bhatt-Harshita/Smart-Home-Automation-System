@@ -1,3 +1,4 @@
+import cors from 'cors';
 import express from 'express';
 import path from 'path';
 import { SerialPort } from 'serialport';
@@ -7,14 +8,22 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+const portPath = 'COM3'; 
+
+// Middleware
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'dist'))); // Add this line
+
 
 
 // Attempt to open serial port to ESP32
 let espPort;
 try {
-  espPort = new SerialPort({ path: 'COM3', baudRate: 9600 });
+  espPort = new SerialPort({ path:portPath, baudRate: 9600 });
   espPort.on('open', () => console.log('Serial port open'));
   espPort.on('error', err => console.error('Serial port error:', err.message));
 } catch (err) {
@@ -61,10 +70,9 @@ app.get('/api/relay/:id/:action', (req, res) => {
 });
 
 // Always return index.html for other routes (for React Router, if any)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'project/dist/index.html'));
+app.get('/:any(*)', (req, res) => { 
+  res.sendFile(path.join(__dirname, 'dist/index.html')); 
 });
-
 
 
 app.listen(PORT, () => {
