@@ -1,13 +1,14 @@
-const express = require('express');
-const path = require('path');
-const { SerialPort } = require('serialport');
+import express from 'express';
+import path from 'path';
+import { SerialPort } from 'serialport';
+import { fileURLToPath } from 'url';
+
+// Fix __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Serve static files from the React app build (dist/)
-app.use(express.static(path.join(__dirname, 'project/dist'))); 
-// If using CRA build, it might be 'build' instead of 'dist'.
 
 
 // Attempt to open serial port to ESP32
