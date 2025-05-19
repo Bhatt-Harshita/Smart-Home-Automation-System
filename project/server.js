@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 // Attempt to open serial port to ESP32
 let espPort;
 try {
-  espPort = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 });
+  espPort = new SerialPort({ path: 'COM3', baudRate: 9600 });
   espPort.on('open', () => console.log('Serial port open'));
   espPort.on('error', err => console.error('Serial port error:', err.message));
 } catch (err) {
