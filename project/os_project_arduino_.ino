@@ -1,3 +1,5 @@
+#include <SoftwareSerial.h>
+SoftwareSerial BTSerial(2, 3); // RX, TX pins for Bluetooth
 int relay1 = 10;
 int relay2 = 11;
 int relay3 = 12;
@@ -6,6 +8,8 @@ int val;
 
 void setup() {
   Serial.begin(9600);
+  BTSerial.begin(9600);
+
   pinMode(relay1, OUTPUT);
   pinMode(relay2, OUTPUT);
   pinMode(relay3, OUTPUT);
@@ -17,10 +21,19 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    val = Serial.parseInt(); // Read integer commands
-    
-    // Turn relays ON (1-4 → LOW)
+  if (Serial.available()) { 
+    int val = Serial.parseInt();
+    processCommand(val);
+  }
+  if (BTSerial.available()) {
+    int val = BTSerial.parseInt();
+    processCommand(val);
+  }
+  
+}
+
+void processCommand(int val){
+  // Turn relays ON (1-4 → LOW)
     if (val == 1) digitalWrite(relay1, LOW);
     else if (val == 2) digitalWrite(relay2, LOW);
     else if (val == 3) digitalWrite(relay3, LOW);
@@ -47,5 +60,5 @@ void loop() {
       digitalWrite(relay3, HIGH);
       digitalWrite(relay4, HIGH);
     }
-  }
+    
 }

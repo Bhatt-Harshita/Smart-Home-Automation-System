@@ -8,72 +8,90 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
-
 const app = express();
 const PORT = process.env.PORT || 3000;
-const portPath = 'COM3'; 
+
+// Default USB port (e.g., ESP32)
+const usbPortPath = 'COM3'; // Change this if needed
+let espPort = null;
+let btPort = null; // Bluetooth port (HC-05)
 
 // Middleware
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'dist'))); // Add this line
+app.use(express.static(path.join(__dirname, 'dist')));
 
-
-
-// Attempt to open serial port to ESP32
-let espPort;
+// Initialize USB Serial Port (e.g. ESP32)
 try {
-  espPort = new SerialPort({ path:portPath, baudRate: 9600 });
-  espPort.on('open', () => console.log('Serial port open'));
-  espPort.on('error', err => console.error('Serial port error:', err.message));
+  espPort = new SerialPort({ path: usbPortPath, baudRate: 9600 });
+  espPort.on('open', () => console.log(`USB serial port open on ${usbPortPath}`));
+  espPort.on('error', err => console.error('USB serial port error:', err.message));
 } catch (err) {
-  console.warn('ESP32 serial port not available – running in simulation mode');
-  espPort = null;
+  console.warn('USB serial port not available – running in simulation mode');
 }
-// Example route: toggle relay by id and action
-// e.g. GET /api/relay/1/on  or  /api/relay/3/off
+
+// Attempt to auto-detect Bluetooth COM port (HC-05)
+SerialPort.list().then(ports => {
+  const btCandidate = ports.find(port =>
+    port.path.includes('COM') &&
+    (port.friendlyName?.toLowerCase().includes('bluetooth') ||
+     port.manufacturer?.toLowerCase().includes('bluetooth') ||
+     port.pnpId?.toLowerCase().includes('hc') ||
+     port.friendlyName?.toLowerCase().includes('hc')
+    )
+  );
+
+  if (btCandidate) {
+    btPort = new SerialPort({ path: btCandidate.path, baudRate: 9600 });
+    btPort.on('open', () => console.log(`Bluetooth port open on ${btCandidate.path}`));
+    btPort.on('error', err => console.error('Bluetooth port error:', err.message));
+  } else {
+    console.warn('Bluetooth module (HC-05) not found');
+  }
+});
+
+// API to toggle relays
 app.get('/api/relay/:id/:action', (req, res) => {
   const id = parseInt(req.params.id);
-  const action = req.params.action; // 'on' or 'off'
+  const action = req.params.action;
   let valueToSend;
 
-  // Map to values based on ESP32 code logic
-  if (action === 'on') {
-    // Turn one relay on (1-4)
-    valueToSend = id;              // 1→1, 2→2, etc.
-  } else if (action === 'off') {
-    // Turn one relay off (5-8 => add 4)
-    valueToSend = 4 + id;          // 1→5, 2→6, etc.
-  } else if (action === 'allon') {
-    valueToSend = 0;              // all relays ON
-  } else if (action === 'alloff') {
-    valueToSend = 10;             // all relays OFF
-  } else {
-    return res.status(400).send({ error: 'Invalid action' });
+  // Convert action to numeric code
+  if (action === 'on') valueToSend = id;
+  else if (action === 'off') valueToSend = 4 + id;
+  else if (action === 'allon') valueToSend = 0;
+  else if (action === 'alloff') valueToSend = 10;
+  else return res.status(400).send({ error: 'Invalid action' });
+
+  // Choose which port to send through
+  const chosenPort = (btPort && btPort.isOpen) ? btPort : (espPort && espPort.isOpen) ? espPort : null;
+
+  if (!chosenPort) {
+    console.log(`Simulated send: relay ${id} ${action}`);
+    return res.send({ status: 'simulated', value: valueToSend });
   }
 
-  if (espPort && espPort.isOpen) {
-    // Send the byte/number to the ESP32
-    espPort.write(String(valueToSend), err => {
-      if (err) {
-        console.error('Error writing to serial:', err);
-        res.status(500).send({ error: 'Serial write failed' });
-      } else {
-        res.send({ status: 'sent', value: valueToSend });
-      }
-    });
-  } else {
-    // Simulate (no ESP32 connected)
-    console.log(`Simulated send to ESP32: relay ${id} ${action}`);
-    res.send({ status: 'simulated', value: valueToSend });
-  }
+  chosenPort.write(String(valueToSend), err => {
+    if (err) {
+      console.error('Error writing to serial:', err);
+      return res.status(500).send({ error: 'Serial write failed' });
+    } else {
+      return res.send({ status: 'sent', value: valueToSend });
+    }
+  });
 });
 
-// Always return index.html for other routes (for React Router, if any)
-app.get('/:any(*)', (req, res) => { 
-  res.sendFile(path.join(__dirname, 'dist/index.html')); 
+// (Optional) Add status route to check connectivity
+app.get('/api/status', (req, res) => {
+  res.send({
+    usb: espPort?.isOpen || false,
+    bluetooth: btPort?.isOpen || false
+  });
 });
 
+// Serve frontend
+app.get('/:any(*)', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
