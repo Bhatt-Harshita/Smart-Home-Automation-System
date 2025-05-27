@@ -3,10 +3,12 @@ import '../App.css';
 
 const Dashboard = () => {
   const [devices, setDevices] = useState([
-    { id: 1, name: 'Living Room Light', status: false, room: 'Living Room', image: 'https://images.unsplash.com/photo-1719887741662-f641ec603471?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGxpdmluZyUyMHJvb20lMjBsaWdodHxlbnwwfHwwfHx8MA%3D%3D' },
-    { id: 2, name: 'Bedroom Fan', status: true, room: 'Bedroom', image: 'https://images.unsplash.com/photo-1677959098115-1aafeb9313c0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YmVkcm9vbSUyMGZhbnxlbnwwfHwwfHx8MA%3D%3D' },
-    { id: 3, name: 'Kitchen Light', status: false, room: 'Kitchen', image: 'https://media.istockphoto.com/id/1371279809/photo/modern-pendant-lighting-home-decoration-kitchen-concept.webp?a=1&b=1&s=612x612&w=0&k=20&c=wjAdRxunpA9JQWGRlesfm2mQPKRWU_q0F_Uq22vz34k=' },
+    { id: 1, name: 'Light 1', status: false, room: 'Living Room', image: 'https://images.unsplash.com/photo-1532007271951-c487760934ae?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+    { id: 2, name: 'Light 2', status: false, room: 'Bedroom', image: 'https://images.unsplash.com/photo-1532007271951-c487760934ae?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+    { id: 3, name: 'Light 3', status: false, room: 'Kitchen', image: 'https://images.unsplash.com/photo-1532007271951-c487760934ae?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+    { id: 4, name: 'Light 4', status: false, room: 'Guest room', image: 'https://images.unsplash.com/photo-1532007271951-c487760934ae?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
   ]);
+
 
   const toggleDevice = async (id, currentStatus) => {
   const action = currentStatus ? 'off' : 'on';
@@ -31,11 +33,20 @@ const Dashboard = () => {
       className="dashboard" 
       style={{ 
         backgroundImage: 'url(https://media.istockphoto.com/id/1824615222/photo/orange-sofa-in-cozy-living-room-interior-with-pastel-green-wall-and-wood-furniture-wall.jpg?s=612x612&w=0&k=20&c=FNA7sRL6fNB9w9AIEhqwsruljfhiAWnHxRWv_JvQ75Q=)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        minHeight: '100vh',
-        padding: '2rem',
-        margin: 0
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          height: '100dvh',
+          width: '100vw',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          padding: '1rem',
+          boxSizing: 'border-box',
+          margin: 0,
+          overflowY: 'auto' // 👈 Allows vertical scroll if needed
+
       }}
     >
       <h2 style={{ color: '#fff', textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>Welcome to IntelliHome</h2>
@@ -44,15 +55,15 @@ const Dashboard = () => {
           key={device.id} 
           className="device-card" 
           style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-            backdropFilter: 'blur(10px)',
-            borderRadius: '20px', 
-            padding: '1rem', 
-            margin: '1rem 0', 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+               backgroundColor: 'rgba(255, 255, 255, 0.15)', 
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px', 
+                padding: '1rem', 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -66,14 +77,15 @@ const Dashboard = () => {
             onClick={() => toggleDevice(device.id, device.status)}
 
             style={{ 
-              backgroundColor: '#00c896', 
-              color: '#fff', 
-              border: 'none', 
-              borderRadius: '8px', 
-              padding: '6px 14px', 
-              fontSize: '0.85rem', 
-              cursor: 'pointer',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                 backgroundColor: '#00c896', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  padding: '8px 18px', 
+                  fontSize: '0.9rem', 
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+
             }}
           >
             Switch
